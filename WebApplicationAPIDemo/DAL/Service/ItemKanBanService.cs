@@ -25,17 +25,35 @@ namespace WebAplicationAPIRestDemo.DAL.Service
                     {
                         while (reader.Read())
                         {
-                            result.Add(new ItemKanBan
+                            if (int.TryParse(reader["Responsable"].ToString(), out int data))
                             {
-                                id = (long)reader["id"],
-                                tasca = reader["tasca"].ToString(),
-                                estat = reader["estat"].ToString(),
-                                color = reader["color"].ToString(),
-                                dataStart = reader["dataStart"].ToString(),
-                                dataFinish = reader["dataFinish"].ToString(),
-                                Responsable = ObtenerResponsablePorId(int.Parse(reader["Responsable"].ToString()))
+                                result.Add(new ItemKanBan
+                                {
+                                    id = (long)reader["id"],
+                                    tasca = reader["tasca"].ToString(),
+                                    estat = reader["estat"].ToString(),
+                                    color = reader["color"].ToString(),
+                                    dataStart = reader["dataStart"].ToString(),
+                                    dataFinish = reader["dataFinish"].ToString(),
+                                    Responsable = ObtenerResponsablePorId(data)
 
-                            });
+                                });
+                            }
+                            else
+                            {
+                                result.Add(new ItemKanBan
+                                {
+                                    id = (long)reader["id"],
+                                    tasca = reader["tasca"].ToString(),
+                                    estat = reader["estat"].ToString(),
+                                    color = reader["color"].ToString(),
+                                    dataStart = reader["dataStart"].ToString(),
+                                    dataFinish = reader["dataFinish"].ToString(),
+                                    Responsable = null
+
+                                });
+                            }
+                            
                         }
                     }
                 }
@@ -80,8 +98,9 @@ namespace WebAplicationAPIRestDemo.DAL.Service
                     command.Parameters.Add(new SQLiteParameter("estat", item.estat));
                     command.Parameters.Add(new SQLiteParameter("color", item.color));
                     command.Parameters.Add(new SQLiteParameter("dataStart", item.dataStart));
-                    command.Parameters.Add(new SQLiteParameter("dataFinish", item.dataStart));
-                    command.Parameters.Add(new SQLiteParameter("Responsable", item.Responsable));
+                    command.Parameters.Add(new SQLiteParameter("dataFinish", item.dataFinish));
+                    command.Parameters.Add(new SQLiteParameter("Responsable", item.Responsable?.id));
+                    command.Parameters.Add(new SQLiteParameter("id", item.id));
 
                     rows_affected = command.ExecuteNonQuery();
                 }
