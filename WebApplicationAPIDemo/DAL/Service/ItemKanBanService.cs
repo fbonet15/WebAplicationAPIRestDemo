@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SQLite;
 using WebAplicationAPIRestDemo.DAL.Model;
 using WebApplicationAPIDemo.Model;
@@ -26,14 +27,14 @@ namespace WebAplicationAPIRestDemo.DAL.Service
                         {
                             result.Add(new ItemKanBan
                             {
-                                _id = (long)reader["id"],
-                                _tasca = reader["tasca"].ToString(),
-                                _estat = reader["estat"].ToString(),
-                                _color = reader["color"].ToString(),
-                                _dataStart = reader["dataStart"].ToString(),
-                                _dataFinish = reader["dataFinish"].ToString(),
-                                //això no anirà ni de conya
-                                _responsable = (Responsable)reader["Responsable"]
+                                id = (long)reader["id"],
+                                tasca = reader["tasca"].ToString(),
+                                estat = reader["estat"].ToString(),
+                                color = reader["color"].ToString(),
+                                dataStart = reader["dataStart"].ToString(),
+                                dataFinish = reader["dataFinish"].ToString(),
+                                Responsable = ObtenerResponsablePorId(int.Parse(reader["Responsable"].ToString()))
+
                             });
                         }
                     }
@@ -49,18 +50,18 @@ namespace WebAplicationAPIRestDemo.DAL.Service
                 string query = "INSERT INTO ItemKanBan (tasca, estat, color, dataStart, dataFinish, Responsable) VALUES (@tasca, @estat, @color, @dataStart, @dataFinish, @Responsable)";
                 using (var command = new System.Data.SQLite.SQLiteCommand(query, ctx))
                 {
-                    command.Parameters.Add(new SQLiteParameter("tasca", item._tasca));
-                    command.Parameters.Add(new SQLiteParameter("estat", item._estat));
-                    command.Parameters.Add(new SQLiteParameter("color", item._color));
-                    command.Parameters.Add(new SQLiteParameter("dataStart", item._dataStart));
-                    command.Parameters.Add(new SQLiteParameter("dataFinish", item._dataStart));
-                    command.Parameters.Add(new SQLiteParameter("Responsable", item._responsable));
+                    command.Parameters.Add(new SQLiteParameter("tasca", item.tasca));
+                    command.Parameters.Add(new SQLiteParameter("estat", item.estat));
+                    command.Parameters.Add(new SQLiteParameter("color", item.color));
+                    command.Parameters.Add(new SQLiteParameter("dataStart", item.dataStart));
+                    command.Parameters.Add(new SQLiteParameter("dataFinish", item.dataFinish));
+                    command.Parameters.Add(new SQLiteParameter("Responsable", item.Responsable.id));
 
                     command.ExecuteNonQuery();
 
                     command.CommandText = "SELECT last_insert_rowid()";
 
-                    item._id = (Int64)command.ExecuteScalar();
+                    item.id = (Int64)command.ExecuteScalar();
                 }
             }
 
@@ -75,12 +76,12 @@ namespace WebAplicationAPIRestDemo.DAL.Service
                 string query = "UPDATE ItemKanBan SET tasca = @tasca, estat = @estat, color = @color, dataStart = @dataStart, dataFinish = @dataFinish, Responsable = @Responsable WHERE id = @id";
                 using (var command = new SQLiteCommand(query, ctx))
                 {
-                    command.Parameters.Add(new SQLiteParameter("tasca", item._tasca));
-                    command.Parameters.Add(new SQLiteParameter("estat", item._estat));
-                    command.Parameters.Add(new SQLiteParameter("color", item._color));
-                    command.Parameters.Add(new SQLiteParameter("dataStart", item._dataStart));
-                    command.Parameters.Add(new SQLiteParameter("dataFinish", item._dataStart));
-                    command.Parameters.Add(new SQLiteParameter("Responsable", item._responsable));
+                    command.Parameters.Add(new SQLiteParameter("tasca", item.tasca));
+                    command.Parameters.Add(new SQLiteParameter("estat", item.estat));
+                    command.Parameters.Add(new SQLiteParameter("color", item.color));
+                    command.Parameters.Add(new SQLiteParameter("dataStart", item.dataStart));
+                    command.Parameters.Add(new SQLiteParameter("dataFinish", item.dataStart));
+                    command.Parameters.Add(new SQLiteParameter("Responsable", item.Responsable));
 
                     rows_affected = command.ExecuteNonQuery();
                 }
@@ -102,6 +103,32 @@ namespace WebAplicationAPIRestDemo.DAL.Service
             }
 
             return rows_affected;
+        }
+
+        public Responsable ObtenerResponsablePorId(int id)
+        {
+            using (var ctx = DbContext.GetInstance())
+            {
+                string query = "SELECT * FROM Responsables WHERE Id = @id";
+                using (var command = new SQLiteCommand(query, ctx))
+                {
+                    command.Parameters.Add(new SQLiteParameter("id", id));
+                    using (var reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new Responsable
+                            {
+                                id = reader.GetInt32("id"),
+                                nom = reader.GetString("nom"),
+                                cognom = reader.GetString("cognom"),
+                                correu = reader.GetString("correu")
+                            };
+                        }
+                    }
+                }
+            }
+            return null;
         }
     }
 }

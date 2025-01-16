@@ -13,7 +13,7 @@ using WebApplicationAPIDemo.Model;
 namespace WebApplicationAPIDemo.Controllers
 {
     [EnableCors]
-    [Route("api/ItemKanBan")]
+    [Route("api/itemKanBan")]
     [ApiController]
     public class ItemKanBanController : ControllerBase
     {
